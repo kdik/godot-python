@@ -29,7 +29,7 @@ env.AppendUnique(CFLAGS=["-m64"])
 env.AppendUnique(LINKFLAGS=["-m64"])
 # Cannot use CPPPATH&LIBPATH here given headers are within `cpython_build` target,
 # so Scons consider the headers are a missing target
-env.AppendUnique(CFLAGS=[f"-I{cpython_build.abspath}/include/python3.7/"])
+env.AppendUnique(CFLAGS=[f"-I{cpython_build.abspath}/include/python3.7m/"])
 env.AppendUnique(LINKFLAGS=[f"-L{cpython_build.abspath}/lib"])
 env.AppendUnique(CYTHON_COMPILE_DEPS=[cpython_build])
 

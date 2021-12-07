@@ -79,7 +79,7 @@ def CythonCompile(env, target, source):
             # LIBS=[*env["CYTHON_LIBS"], *env["LIBS"]],
             # LIBPATH=[*env['CYTHON_LIBPATH'], *env['LIBPATH']]
         )
-    else:  # x11 / macos
+    elif env["platform"].startswith("osx"): # macos
         # Cyton modules depend on libpython.so and libpythonscript.so
         # given they won't be available in the default OS lib path we
         # must provide their path to the linker
@@ -99,6 +99,29 @@ def CythonCompile(env, target, source):
             CFLAGS=cflags,
             LINKFLAGS=[*linkflags, *env["LINKFLAGS"]],
             LIBS=["python3.7", "pythonscript"],
+            # LIBS=[*env["CYTHON_LIBS"], *env["LIBS"]],
+            # LIBPATH=[*env['CYTHON_LIBPATH'], *env['LIBPATH']]
+        )
+    else:  # x11
+        # Cyton modules depend on libpython.so and libpythonscript.so
+        # given they won't be available in the default OS lib path we
+        # must provide their path to the linker
+        loader_token = "@loader_path" if env["platform"].startswith("osx") else "$$ORIGIN"
+        libpython_path = _get_relative_path_to_libpython(env, env.File(target))
+        libpythonscript_path = _get_relative_path_to_libpythonscript(env, env.File(target))
+        linkflags = [
+            f"-Wl,-rpath,'{loader_token}/{libpython_path}'",
+            f"-Wl,-rpath,'{loader_token}/{libpythonscript_path}'",
+        ]
+        # TODO: use scons `env.LoadableModule` for better macos support ?
+        ret = env.SharedLibrary(
+            target=target,
+            source=source,
+            LIBPREFIX="",
+            SHLIBSUFFIX=".so",
+            CFLAGS=cflags,
+            LINKFLAGS=[*linkflags, *env["LINKFLAGS"]],
+            LIBS=["python3.7m", "pythonscript"],
             # LIBS=[*env["CYTHON_LIBS"], *env["LIBS"]],
             # LIBPATH=[*env['CYTHON_LIBPATH'], *env['LIBPATH']]
         )
